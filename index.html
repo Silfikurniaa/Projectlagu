@@ -5,7 +5,6 @@
   <title>Music Recommendation Analyzer</title>
 
   <style>
-
     *{
       box-sizing:border-box;
     }
@@ -75,6 +74,7 @@
       border-radius:8px;
       white-space:pre-line;
       background:#fafafa;
+      line-height:1.6;
     }
 
     #loading{
@@ -89,8 +89,12 @@
       max-width:500px;
       border-radius:12px;
       margin-top:15px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.15);
     }
 
+    .image-wrap{
+      text-align:center;
+    }
   </style>
 </head>
 
@@ -120,14 +124,12 @@
     <button
       class="btn-add"
       onclick="tambah()">
-
       Tambah Lagu
     </button>
 
     <button
       class="btn-analyze"
       onclick="analisis()">
-
       Dapatkan Rekomendasi
     </button>
 
@@ -135,32 +137,26 @@
       id="generateBtn"
       class="btn-image"
       onclick="generateImage()">
-
       Generate AI Cover
     </button>
 
   </div>
 
   <div class="card">
-
     <h3 id="total">
       Total Lagu: 0
     </h3>
-
   </div>
 
   <div class="card">
-
     <h3>Riwayat Pemutaran</h3>
 
     <div id="list">
       Belum ada data
     </div>
-
   </div>
 
   <div class="card">
-
     <h3>Rekomendasi AI</h3>
 
     <div id="result">
@@ -170,24 +166,32 @@
     <div id="loading">
       ⏳ AI sedang bekerja...
     </div>
-
   </div>
 
   <div class="card">
-
     <h3>AI Generated Cover</h3>
 
-    <img id="aiImage">
+    <p>
+      Setelah rekomendasi muncul, klik tombol
+      <b>Generate AI Cover</b> untuk membuat cover musik otomatis.
+    </p>
 
+    <div class="image-wrap">
+      <img id="aiImage" alt="AI Generated Cover">
+    </div>
   </div>
 
 </div>
 
 <script>
-
 let historyMusic = [];
-
 let hasilAnalisis = "";
+
+const ANALYZE_API =
+  "https://project-lagu-backend-x7zk.vercel.app/api/analyze";
+
+const IMAGE_API =
+  "https://project-lagu-backend-x7zk.vercel.app/api/generate-images";
 
 function render(){
 
@@ -213,6 +217,14 @@ function render(){
     text || "Belum ada data";
 }
 
+function resetImage(){
+  const img =
+    document.getElementById("aiImage");
+
+  img.src = "";
+  img.style.display = "none";
+}
+
 function tambah(){
 
   const song =
@@ -227,10 +239,7 @@ function tambah(){
 
   if(!song || !artist){
 
-    alert(
-      "Isi nama lagu dan artis"
-    );
-
+    alert("Isi nama lagu dan artis");
     return;
   }
 
@@ -242,6 +251,14 @@ function tambah(){
   document.getElementById("song").value = "";
   document.getElementById("artist").value = "";
 
+  hasilAnalisis = "";
+  document.getElementById("result").innerText =
+    "Belum dianalisis";
+
+  document.getElementById("generateBtn").style.display =
+    "none";
+
+  resetImage();
   render();
 }
 
@@ -249,20 +266,22 @@ async function analisis(){
 
   if(historyMusic.length === 0){
 
-    alert(
-      "Masukkan riwayat lagu terlebih dahulu"
-    );
-
+    alert("Masukkan riwayat lagu terlebih dahulu");
     return;
   }
 
   const loading =
     document.getElementById("loading");
 
+  loading.innerText =
+    "⏳ AI sedang mencari rekomendasi lagu...";
+
   loading.style.display = "block";
 
   document.getElementById("result").innerText =
     "Mencari rekomendasi lagu...";
+
+  resetImage();
 
   const daftarLagu =
     historyMusic
@@ -279,7 +298,7 @@ async function analisis(){
 
     const res =
       await fetch(
-        "https://project-lagu-backend-x7zk.vercel.app/api/analyze",
+        ANALYZE_API,
         {
           method:"POST",
 
@@ -333,15 +352,15 @@ async function generateImage(){
 
   if(!hasilAnalisis){
 
-    alert(
-      "Lakukan analisis terlebih dahulu"
-    );
-
+    alert("Lakukan analisis terlebih dahulu");
     return;
   }
 
   const loading =
     document.getElementById("loading");
+
+  loading.innerText =
+    "🎨 AI sedang membuat cover musik...";
 
   loading.style.display = "block";
 
@@ -349,7 +368,7 @@ async function generateImage(){
 
     const res =
       await fetch(
-        "https://project-lagu-backend-x7zk.vercel.app/api/generate-images",
+        IMAGE_API,
         {
           method:"POST",
 
@@ -358,8 +377,7 @@ async function generateImage(){
           },
 
           body:JSON.stringify({
-            recommendation:
-              hasilAnalisis
+            recommendation: hasilAnalisis
           })
         }
       );
@@ -372,8 +390,12 @@ async function generateImage(){
       const img =
         document.getElementById("aiImage");
 
-      img.src =
-        data.image;
+      if(String(data.image).startsWith("data:image")){
+        img.src = data.image;
+      }else{
+        img.src =
+          `data:image/png;base64,${data.image}`;
+      }
 
       img.style.display =
         "block";
@@ -392,7 +414,7 @@ async function generateImage(){
     console.error(err);
 
     alert(
-      "Tidak bisa konek ke backend"
+      "Tidak bisa konek ke backend image"
     );
 
   }finally{
@@ -403,7 +425,6 @@ async function generateImage(){
 }
 
 render();
-
 </script>
 
 </body>
