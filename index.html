@@ -60,7 +60,7 @@
 
     .btn-image{
       background:#a855f7;
-      display:none;
+      display:inline-block;
     }
 
     button:hover{
@@ -133,19 +133,10 @@
       Dapatkan Rekomendasi
     </button>
 
-    <button
-      id="generateBtn"
-      class="btn-image"
-      onclick="generateImage()">
-      Generate AI Cover
-    </button>
-
   </div>
 
   <div class="card">
-    <h3 id="total">
-      Total Lagu: 0
-    </h3>
+    <h3 id="total">Total Lagu: 0</h3>
   </div>
 
   <div class="card">
@@ -172,9 +163,16 @@
     <h3>AI Generated Cover</h3>
 
     <p>
-      Setelah rekomendasi muncul, klik tombol
-      <b>Generate AI Cover</b> untuk membuat cover musik otomatis.
+      Setelah rekomendasi muncul, klik tombol di bawah ini
+      untuk membuat cover musik otomatis.
     </p>
+
+    <button
+      id="generateBtn"
+      class="btn-image"
+      onclick="generateImage()">
+      Generate AI Cover
+    </button>
 
     <div class="image-wrap">
       <img id="aiImage" alt="AI Generated Cover">
@@ -210,14 +208,14 @@ function render(){
   });
 
   document.getElementById("total").innerText =
-    "Total Lagu: " +
-    historyMusic.length;
+    "Total Lagu: " + historyMusic.length;
 
   document.getElementById("list").innerText =
     text || "Belum ada data";
 }
 
 function resetImage(){
+
   const img =
     document.getElementById("aiImage");
 
@@ -238,7 +236,6 @@ function tambah(){
     .trim();
 
   if(!song || !artist){
-
     alert("Isi nama lagu dan artis");
     return;
   }
@@ -252,11 +249,9 @@ function tambah(){
   document.getElementById("artist").value = "";
 
   hasilAnalisis = "";
+
   document.getElementById("result").innerText =
     "Belum dianalisis";
-
-  document.getElementById("generateBtn").style.display =
-    "none";
 
   resetImage();
   render();
@@ -265,7 +260,6 @@ function tambah(){
 async function analisis(){
 
   if(historyMusic.length === 0){
-
     alert("Masukkan riwayat lagu terlebih dahulu");
     return;
   }
@@ -301,11 +295,9 @@ async function analisis(){
         ANALYZE_API,
         {
           method:"POST",
-
           headers:{
             "Content-Type":"application/json"
           },
-
           body:JSON.stringify({
             songs: daftarLagu
           })
@@ -323,15 +315,10 @@ async function analisis(){
       document.getElementById("result").innerText =
         json.result;
 
-      document.getElementById("generateBtn")
-        .style.display =
-        "inline-block";
-
     }else{
 
       document.getElementById("result").innerText =
-        json.error ||
-        "AI gagal menganalisis";
+        json.error || "AI gagal menganalisis";
 
     }
 
@@ -351,8 +338,7 @@ async function analisis(){
 async function generateImage(){
 
   if(!hasilAnalisis){
-
-    alert("Lakukan analisis terlebih dahulu");
+    alert("Klik Dapatkan Rekomendasi terlebih dahulu");
     return;
   }
 
@@ -371,11 +357,9 @@ async function generateImage(){
         IMAGE_API,
         {
           method:"POST",
-
           headers:{
             "Content-Type":"application/json"
           },
-
           body:JSON.stringify({
             recommendation: hasilAnalisis
           })
@@ -397,15 +381,11 @@ async function generateImage(){
           `data:image/png;base64,${data.image}`;
       }
 
-      img.style.display =
-        "block";
+      img.style.display = "block";
 
     }else{
 
-      alert(
-        data.error ||
-        "Gagal membuat gambar"
-      );
+      alert(data.error || "Gagal membuat gambar");
 
     }
 
@@ -413,14 +393,11 @@ async function generateImage(){
 
     console.error(err);
 
-    alert(
-      "Tidak bisa konek ke backend image"
-    );
+    alert("Tidak bisa konek ke backend image");
 
   }finally{
 
-    loading.style.display =
-      "none";
+    loading.style.display = "none";
   }
 }
 
